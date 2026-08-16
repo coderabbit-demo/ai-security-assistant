@@ -11,6 +11,8 @@ def error(message: str, status: int = 400):
 
 
 def paginated(items: list, page: int, per_page: int, total: int):
+    if per_page <= 0:
+        return error("per_page must be greater than 0", 400)
     return jsonify({
         "data": items,
         "pagination": {
