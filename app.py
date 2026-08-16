@@ -2,9 +2,12 @@ from flask import Flask, request, jsonify
 from auth import authenticate_user, generate_token, verify_token
 from scanner import scan_incident
 from db import get_db_connection
+from pagination import get_page_params, paginate
+from health import health_bp
 import config  # noqa: F401
 
 app = Flask(__name__)
+app.register_blueprint(health_bp)
 
 from error_handler import register_error_handlers
 register_error_handlers(app)
@@ -47,9 +50,11 @@ def get_incidents():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM incidents WHERE user_id = ?", (user["id"],))
-    incidents = cursor.fetchall()
+    incidents = [dict(row) for row in cursor.fetchall()]
     conn.close()
-    return jsonify({"incidents": incidents})
+
+    page, per_page = get_page_params()
+    return jsonify(paginate(incidents, page, per_page))
 
 
 @app.route("/health", methods=["GET"])
