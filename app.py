@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from auth import authenticate_user, generate_token, verify_token
 from scanner import scan_incident
 from db import get_db_connection
+import config  # noqa: F401
 
 app = Flask(__name__)
 
