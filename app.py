@@ -6,6 +6,9 @@ import config  # noqa: F401
 
 app = Flask(__name__)
 
+from error_handler import register_error_handlers
+register_error_handlers(app)
+
 
 @app.route("/login", methods=["POST"])
 def login():
