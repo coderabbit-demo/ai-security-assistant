@@ -9,6 +9,9 @@ app = Flask(__name__)
 from error_handler import register_error_handlers
 register_error_handlers(app)
 
+from middleware import register_middleware
+register_middleware(app)
+
 
 @app.route("/login", methods=["POST"])
 def login():
