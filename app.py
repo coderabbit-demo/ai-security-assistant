@@ -57,10 +57,6 @@ def get_incidents():
     return jsonify(paginate(incidents, page, per_page))
 
 
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok"})
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
