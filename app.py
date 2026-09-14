@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from auth import authenticate_user, generate_token, verify_token
 from scanner import scan_incident
 from db import get_db_connection
+from rate_limit import rate_limited
 import config  # noqa: F401
 
 app = Flask(__name__)
@@ -11,6 +12,7 @@ register_error_handlers(app)
 
 
 @app.route("/login", methods=["POST"])
+@rate_limited(limit=10)
 def login():
     data = request.get_json()
     username = data.get("username")
@@ -25,6 +27,7 @@ def login():
 
 
 @app.route("/scan", methods=["POST"])
+@rate_limited(limit=60)
 def scan():
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     user = verify_token(token)
