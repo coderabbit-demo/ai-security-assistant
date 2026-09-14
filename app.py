@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from auth import authenticate_user, generate_token, verify_token
 from scanner import scan_incident
 from db import get_db_connection
+from export import export_incidents
 import config  # noqa: F401
 
 app = Flask(__name__)
@@ -50,6 +51,23 @@ def get_incidents():
     incidents = cursor.fetchall()
     conn.close()
     return jsonify({"incidents": incidents})
+
+
+@app.route("/incidents/export", methods=["GET"])
+def export():
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user = verify_token(token)
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    filename = request.args.get("filename", "incidents.csv")
+    result = export_incidents(
+        user["id"],
+        filename,
+        severity=request.args.get("severity"),
+        since=request.args.get("since"),
+    )
+    return jsonify(result)
 
 
 @app.route("/health", methods=["GET"])
