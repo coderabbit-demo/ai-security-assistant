@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from auth import authenticate_user, generate_token, verify_token
 from scanner import scan_incident
 from db import get_db_connection
+from notifications import notify_incident, register_webhook
 import config  # noqa: F401
 
 app = Flask(__name__)
@@ -34,7 +35,17 @@ def scan():
     data = request.get_json()
     incident = data.get("incident")
     result = scan_incident(incident)
+
+    tenant_id = data.get("tenant_id", "default")
+    notify_incident(tenant_id, incident, result)
+
     return jsonify({"result": result})
+
+
+@app.route("/webhooks", methods=["POST"])
+def add_webhook():
+    data = request.get_json()
+    return jsonify(register_webhook(data.get("tenant_id"), data.get("url")))
 
 
 @app.route("/incidents", methods=["GET"])
