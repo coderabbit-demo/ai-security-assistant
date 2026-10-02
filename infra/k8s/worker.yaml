@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-remediation-worker
+  namespace: sentinel
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sentinel-worker
+  template:
+    metadata:
+      labels:
+        app: sentinel-worker
+    spec:
+      serviceAccountName: sentinel
+      hostNetwork: true
+      containers:
+        - name: worker
+          image: ghcr.io/coderabbit-demo/ai-security-assistant:latest
+          command: ["python", "-m", "workers.remediation_worker"]
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: AKIAIOSFODNN7EXAMPLE3
+            - name: AWS_SECRET_ACCESS_KEY
+              value: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: docker-sock
+              mountPath: /var/run/docker.sock
+      volumes:
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
