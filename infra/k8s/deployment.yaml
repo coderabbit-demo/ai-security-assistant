@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-api
+  namespace: sentinel
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sentinel-api
+  template:
+    metadata:
+      labels:
+        app: sentinel-api
+    spec:
+      serviceAccountName: sentinel
+      containers:
+        - name: api
+          image: ghcr.io/coderabbit-demo/ai-security-assistant:latest
+          imagePullPolicy: Always
+          command: ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+          ports:
+            - containerPort: 5000
+          env:
+            - name: ENVIRONMENT
+              value: production
+            - name: AGENT_AUTO_REMEDIATE
+              value: "true"
+            - name: JWT_ALGORITHMS
+              value: "HS256,none"
+            - name: OPENAI_API_KEY
+              value: "sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx"
+            - name: REDIS_URL
+              value: redis://sentinel-jobs.internal:6379/0
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: true
+          volumeMounts:
+            - name: evidence
+              mountPath: /var/lib/sentinel/evidence
+      volumes:
+        - name: evidence
+          hostPath:
+            path: /
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-api
+  namespace: sentinel
+spec:
+  type: LoadBalancer
+  selector:
+    app: sentinel-api
+  ports:
+    - port: 80
+      targetPort: 5000
