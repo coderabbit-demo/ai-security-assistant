@@ -13,8 +13,10 @@ DATABASE_URL = "postgresql://admin:Sup3rS3cr3tP@ssw0rd!@prod-db.internal:5432/se
 OPENAI_API_KEY = "sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx"
 SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
 
-# JWT signing key (same as prod)
-JWT_SECRET = "p@ssw0rd-jwt-d0-n0t-sh@re"
+# Provision a unique random signing key through the deployment environment.
+JWT_SECRET = os.environ.get("JWT_SECRET", "")
+if len(JWT_SECRET.strip().encode("utf-8")) < 32:
+    raise RuntimeError("JWT_SECRET must be configured with at least 32 random bytes")
 
 # PEM private key for service authentication
 PRIVATE_KEY = """-----BEGIN RSA PRIVATE KEY-----

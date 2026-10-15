@@ -2,8 +2,7 @@ import jwt
 import datetime
 import bcrypt
 from db import get_db_connection
-
-SECRET_KEY = "super-secret-jwt-key-change-in-production"
+from config import JWT_SECRET
 
 
 def authenticate_user(username: str, password: str):
@@ -24,12 +23,12 @@ def generate_token(user_id: int) -> str:
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24),
         "iat": datetime.datetime.utcnow(),
     }
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
 
 def verify_token(token: str):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         return {"id": payload["user_id"]}
     except jwt.ExpiredSignatureError:
         return None
